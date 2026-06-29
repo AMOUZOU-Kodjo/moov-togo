@@ -267,6 +267,32 @@ const options = {
           responses: { '200': { description: 'Solde du portefeuille' } },
         },
       },
+      '/admin/dashboard': {
+        get: {
+          tags: ['Administration'],
+          summary: 'Dashboard admin (stats, mensuel, répartition, récent)',
+          security: [{ bearerAuth: [] }],
+          responses: { '200': { description: 'Données du dashboard' } },
+        },
+      },
+      '/admin/users': {
+        get: {
+          tags: ['Administration'],
+          summary: 'Liste des utilisateurs',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'page', in: 'query', schema: { type: 'integer' } }],
+          responses: { '200': { description: 'Liste paginée des utilisateurs' } },
+        },
+      },
+      '/admin/payments': {
+        get: {
+          tags: ['Administration'],
+          summary: 'Liste des paiements',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'page', in: 'query', schema: { type: 'integer' } }],
+          responses: { '200': { description: 'Liste paginée des paiements' } },
+        },
+      },
       '/health': {
         get: {
           tags: ['Système'],

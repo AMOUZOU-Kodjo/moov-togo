@@ -61,4 +61,10 @@ export const payments = {
   wallet: () => api.get('/payments/wallet'),
 }
 
+export const admin = {
+  dashboard: () => api.get('/admin/dashboard'),
+  users: (page = 1) => api.get(`/admin/users?page=${page}`),
+  payments: (page = 1) => api.get(`/admin/payments?page=${page}`),
+}
+
 export default api

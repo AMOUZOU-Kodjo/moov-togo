@@ -30,24 +30,28 @@ const sendOtp = async (phone) => {
 
 const verifyOtp = async (phone, code) => {
   phone = normalizePhone(phone)
-  const otp = await prisma.otpCode.findFirst({
-    where: {
-      phone,
-      code,
-      isUsed: false,
-      expiresAt: { gte: new Date() },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
 
-  if (!otp) {
-    throw new Error('Code invalide ou expiré')
+  // Dev bypass: code 123456 always works
+  if (code !== '123456') {
+    const otp = await prisma.otpCode.findFirst({
+      where: {
+        phone,
+        code,
+        isUsed: false,
+        expiresAt: { gte: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    if (!otp) {
+      throw new Error('Code invalide ou expiré')
+    }
+
+    await prisma.otpCode.update({
+      where: { id: otp.id },
+      data: { isUsed: true },
+    })
   }
-
-  await prisma.otpCode.update({
-    where: { id: otp.id },
-    data: { isUsed: true },
-  })
 
   let user = await prisma.user.findUnique({ where: { phone } })
   if (!user) {

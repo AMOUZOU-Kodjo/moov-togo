@@ -86,8 +86,16 @@ export default function Layout() {
         </nav>
 
         <div className="px-3 pb-4 space-y-1 border-t border-gray-100 pt-3">
-          <NavLink to="/admin" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-gray-100 transition-all">
-            <Shield size={18} /> Admin
+          <NavLink to="/admin"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all ${
+                isActive
+                  ? 'bg-moov-500 text-white shadow-md shadow-moov-500/20 font-semibold'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`
+            }
+          >
+            <Shield size={18} /> Admin <span className="ml-auto text-[10px] opacity-60">Dashboard</span>
           </NavLink>
           <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-all">
             <LogOut size={18} /> Déconnexion
@@ -140,7 +148,11 @@ export default function Layout() {
                 })}
                 <hr className="my-3" />
                 <NavLink to="/admin" onClick={() => setSidebarOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-gray-100"
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
+                      isActive ? 'bg-moov-500 text-white font-semibold' : 'text-gray-600 hover:bg-gray-100'
+                    }`
+                  }
                 >
                   <Shield size={18} /> Admin
                 </NavLink>
