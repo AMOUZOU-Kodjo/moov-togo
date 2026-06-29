@@ -107,24 +107,26 @@ export default function Food() {
             </div>
           )}
 
-          {cantines.map((c, i) => (
-            <AnimatedCard key={c.id} index={i} onClick={() => setSelected(c)} className="card bg-white rounded-2xl shadow-md p-4 w-full text-left hover:shadow-lg cursor-pointer">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-moov-100 text-moov-500">
-                  <Store size={24} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold truncate">{c.name}</h3>
-                  <p className="text-sm text-gray-400 truncate">{c.address || c.quartier}</p>
-                  <div className="flex gap-3 text-xs mt-1">
-                    <span className="flex items-center gap-1"><Star size={12} className="text-yellow-500" /> {c.rating?.toFixed(1) || '-'}</span>
-                    <span className="text-moov-500">Livraison {c.deliveryFee?.toLocaleString()} F</span>
+          <div className="grid lg:grid-cols-2 gap-4">
+            {cantines.map((c, i) => (
+              <AnimatedCard key={c.id} index={i} onClick={() => setSelected(c)} className="card bg-white rounded-2xl shadow-md p-4 w-full text-left hover:shadow-lg cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-moov-100 text-moov-500 shrink-0">
+                    <Store size={24} />
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold truncate">{c.name}</h3>
+                    <p className="text-sm text-gray-400 truncate">{c.address || c.quartier}</p>
+                    <div className="flex gap-3 text-xs mt-1">
+                      <span className="flex items-center gap-1"><Star size={12} className="text-yellow-500" /> {c.rating?.toFixed(1) || '-'}</span>
+                      <span className="text-moov-500">Livraison {c.deliveryFee?.toLocaleString()} F</span>
+                    </div>
+                  </div>
+                  <ArrowLeft size={18} className="text-gray-300 rotate-180 shrink-0" />
                 </div>
-                <ArrowLeft size={18} className="text-gray-300 rotate-180 shrink-0" />
-              </div>
-            </AnimatedCard>
-          ))}
+              </AnimatedCard>
+            ))}
+          </div>
         </>
       ) : (
         <>
@@ -137,74 +139,94 @@ export default function Food() {
             <ArrowLeft size={16} /> Retour
           </motion.button>
 
-          {selected.lat && selected.lng && (
-            <MapView
-              center={[selected.lat, selected.lng]}
-              pickup={{ lat: gps?.lat || 6.1319, lng: gps?.lng || 1.2223 }}
-              dropoff={{ lat: selected.lat, lng: selected.lng, address: selected.name }}
-              height="180px"
-              className="w-full"
-            />
-          )}
-
-          <motion.div
-            className="card-moov"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h2 className="font-bold text-lg mb-1">{selected.name}</h2>
-            <p className="text-sm text-gray-400 mb-4">
-              {selected.address || selected.quartier} · Livraison {selected.deliveryFee?.toLocaleString()} F
-            </p>
-
-            <div className="divide-y">
-              {(selected.menuItems || []).map((item) => (
-                <div key={item.id} className="flex items-center justify-between py-3">
-                  <div>
-                    <span className="font-medium">{item.name}</span>
-                    <span className="text-xs text-gray-400 ml-2">{item.category}</span>
-                    <p className="text-sm font-semibold text-moov-500">{item.price.toLocaleString()} F</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {cart[item.id] ? (
-                      <motion.div layout className="flex items-center gap-2">
-                        <motion.button whileTap={{ scale: 0.9 }} onClick={() => remove(item.id)} className="btn btn-xs btn-circle btn-ghost"><Minus size={14} /></motion.button>
-                        <span className="font-bold w-6 text-center">{cart[item.id]}</span>
-                        <motion.button whileTap={{ scale: 0.9 }} onClick={() => add(item.id)} className="btn btn-xs btn-circle btn-ghost"><Plus size={14} /></motion.button>
-                      </motion.div>
-                    ) : (
-                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => add(item.id)} className="btn btn-sm btn-moov">Ajouter</motion.button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          <AnimatePresence>
-            {Object.keys(cart).length > 0 && (
+          <div className="lg:grid lg:grid-cols-5 lg:gap-6">
+            <div className="lg:col-span-3 space-y-4">
               <motion.div
+                className="card-moov"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="card-moov flex items-center justify-between"
               >
-                <div>
-                  <span className="font-bold">Total</span>
-                  <span className="text-lg font-bold text-moov-500 ml-2">{cartTotal().toLocaleString()} F</span>
+                <h2 className="font-bold text-lg mb-1">{selected.name}</h2>
+                <p className="text-sm text-gray-400 mb-4">
+                  {selected.address || selected.quartier} · Livraison {selected.deliveryFee?.toLocaleString()} F
+                </p>
+
+                <div className="divide-y">
+                  {(selected.menuItems || []).map((item) => (
+                    <div key={item.id} className="flex items-center justify-between py-3">
+                      <div>
+                        <span className="font-medium">{item.name}</span>
+                        <span className="text-xs text-gray-400 ml-2">{item.category}</span>
+                        <p className="text-sm font-semibold text-moov-500">{item.price.toLocaleString()} F</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {cart[item.id] ? (
+                          <motion.div layout className="flex items-center gap-2">
+                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => remove(item.id)} className="btn btn-xs btn-circle btn-ghost"><Minus size={14} /></motion.button>
+                            <span className="font-bold w-6 text-center">{cart[item.id]}</span>
+                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => add(item.id)} className="btn btn-xs btn-circle btn-ghost"><Plus size={14} /></motion.button>
+                          </motion.div>
+                        ) : (
+                          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => add(item.id)} className="btn btn-sm btn-moov">Ajouter</motion.button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={handleOrder}
-                  disabled={loading}
-                  className="btn btn-moov gap-2"
-                >
-                  {loading ? <span className="loading loading-spinner loading-sm" /> : <><ShoppingCart size={16} /> Commander</>}
-                </motion.button>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </div>
+
+            <div className="lg:col-span-2 space-y-4">
+              {selected.lat && selected.lng && (
+                <motion.div className="card-moov" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                  <h3 className="font-semibold text-sm mb-2">Distance</h3>
+                  <MapView
+                    center={[selected.lat, selected.lng]}
+                    pickup={{ lat: gps?.lat || 6.1319, lng: gps?.lng || 1.2223 }}
+                    dropoff={{ lat: selected.lat, lng: selected.lng, address: selected.name }}
+                    height="200px"
+                    className="w-full"
+                  />
+                </motion.div>
+              )}
+
+              <AnimatePresence>
+                {Object.keys(cart).length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    className="card-moov"
+                  >
+                    <h3 className="font-bold mb-2">Récapitulatif</h3>
+                    {Object.entries(cart).map(([itemId, qty]) => {
+                      const item = selected.menuItems?.find(m => m.id === itemId)
+                      if (!item) return null
+                      return (
+                        <div key={itemId} className="flex justify-between text-sm py-1">
+                          <span>{item.name} x{qty}</span>
+                          <span className="font-medium">{(item.price * qty).toLocaleString()} F</span>
+                        </div>
+                      )
+                    })}
+                    <div className="border-t pt-2 mt-2 flex justify-between font-bold">
+                      <span>Total</span>
+                      <span className="text-moov-500">{cartTotal().toLocaleString()} F</span>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleOrder}
+                      disabled={loading}
+                      className="btn btn-moov w-full mt-4 gap-2"
+                    >
+                      {loading ? <span className="loading loading-spinner loading-sm" /> : <><ShoppingCart size={16} /> Commander</>}
+                    </motion.button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            </div>
         </>
       )}
     </AnimatedPage>
