@@ -1,0 +1,284 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CLIENT
+  DRIVER
+  CANTINE
+  ADMIN
+}
+
+enum RideStatus {
+  PENDING
+  ACCEPTED
+  ARRIVED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  PENDING
+  PREPARING
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum OrderType {
+  FOOD
+  PARCEL
+  RIDE
+}
+
+enum PaymentProvider {
+  FLOOZ
+  TMONEY
+  CASH
+  WALLET
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id              String    @id @default(cuid())
+  phone           String    @unique
+  name            String?
+  email           String?
+  passwordHash    String?
+  role            UserRole  @default(CLIENT)
+  isVerified      Boolean   @default(false)
+  avatarUrl       String?
+  rating          Float     @default(0.0)
+  rideCount       Int       @default(0)
+  deliveryCount   Int       @default(0)
+  walletBalance   Float     @default(0.0)
+  fcmToken        String?
+  lastLat         Float?
+  lastLng         Float?
+  isOnline        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  sentRides        Ride[]      @relation("RiderRides")
+  acceptedRides    Ride[]      @relation("DriverRides")
+  sentDeliveries   Delivery[]  @relation("SenderDeliveries")
+  acceptedDeliveries Delivery[] @relation("DelivererDeliveries")
+  payments         Payment[]
+  reviewsGiven     Review[]    @relation("ReviewAuthor")
+  reviewsReceived  Review[]    @relation("ReviewTarget")
+  driverDocuments  DriverDocument[]
+  vehicles         Vehicle[]
+  cantines         Cantine[]
+
+  @@map("users")
+}
+
+model Vehicle {
+  id          String   @id @default(cuid())
+  driverId    String
+  type        String   // "zemidjan", "moto", "voiture", "bus"
+  brand       String?
+  model       String?
+  licensePlate String?
+  color       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  driver User @relation(fields: [driverId], references: [id])
+
+  @@map("vehicles")
+}
+
+model DriverDocument {
+  id          String   @id @default(cuid())
+  driverId    String
+  type        String   // "permis", "carte_grise", "cni", "assurance"
+  documentUrl String
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  driver User @relation(fields: [driverId], references: [id])
+
+  @@map("driver_documents")
+}
+
+model Ride {
+  id           String       @id @default(cuid())
+  riderId      String
+  driverId     String?
+  pickupLat    Float
+  pickupLng    Float
+  pickupAddress String
+  dropoffLat   Float
+  dropoffLng   Float
+  dropoffAddress String
+  status       RideStatus   @default(PENDING)
+  distanceKm   Float?
+  durationMin  Int?
+  price        Float?
+  vehicleType  String       @default("zemidjan")
+  createdAt    DateTime     @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+  cancelledAt  DateTime?
+
+  rider  User  @relation("RiderRides", fields: [riderId], references: [id])
+  driver User? @relation("DriverRides", fields: [driverId], references: [id])
+  payment Payment?
+  reviews Review[]
+
+  @@map("rides")
+}
+
+model Cantine {
+  id          String   @id @default(cuid())
+  ownerId     String
+  name        String
+  description String?
+  phone       String
+  address     String
+  quartier    String
+  lat         Float?
+  lng         Float?
+  imageUrl    String?
+  isOpen      Boolean  @default(true)
+  rating      Float    @default(0.0)
+  deliveryFee Float    @default(500)
+  createdAt   DateTime @default(now())
+
+  owner    User       @relation(fields: [ownerId], references: [id])
+  menuItems MenuItem[]
+  deliveries Delivery[]
+
+  @@map("cantines")
+}
+
+model MenuItem {
+  id          String   @id @default(cuid())
+  cantineId   String
+  name        String
+  description String?
+  price       Float
+  category    String   // "plat", "boisson", "dessert"
+  imageUrl    String?
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  cantine Cantine @relation(fields: [cantineId], references: [id])
+  items   DeliveryItem[]
+
+  @@map("menu_items")
+}
+
+model Delivery {
+  id              String         @id @default(cuid())
+  orderType       OrderType
+  senderId        String
+  delivererId     String?
+  cantineId       String?
+  pickupLat       Float
+  pickupLng       Float
+  pickupAddress   String
+  dropoffLat      Float
+  dropoffLng      Float
+  dropoffAddress  String
+  recipientName   String?
+  recipientPhone  String?
+  status          DeliveryStatus @default(PENDING)
+  distanceKm      Float?
+  price           Float?
+  deliveryFee     Float?
+  note            String?
+  createdAt       DateTime       @default(now())
+  pickedUpAt      DateTime?
+  deliveredAt     DateTime?
+  cancelledAt     DateTime?
+
+  sender    User          @relation("SenderDeliveries", fields: [senderId], references: [id])
+  deliverer User?         @relation("DelivererDeliveries", fields: [delivererId], references: [id])
+  cantine   Cantine?      @relation(fields: [cantineId], references: [id])
+  items     DeliveryItem[]
+  payment   Payment?
+  reviews   Review[]
+
+  @@map("deliveries")
+}
+
+model DeliveryItem {
+  id         String @id @default(cuid())
+  deliveryId String
+  menuItemId String?
+  name       String
+  quantity   Int
+  price      Float
+
+  delivery Delivery @relation(fields: [deliveryId], references: [id])
+  menuItem MenuItem? @relation(fields: [menuItemId], references: [id])
+
+  @@map("delivery_items")
+}
+
+model Payment {
+  id              String         @id @default(cuid())
+  userId          String
+  rideId          String?   @unique
+  deliveryId      String?   @unique
+  amount          Float
+  provider        PaymentProvider
+  providerPhone   String?
+  status          PaymentStatus  @default(PENDING)
+  transactionId   String?        @unique
+  providerRef     String?
+  commission      Float          @default(0.0)
+  createdAt       DateTime       @default(now())
+  paidAt          DateTime?
+
+  user     User      @relation(fields: [userId], references: [id])
+  ride     Ride?     @relation(fields: [rideId], references: [id])
+  delivery Delivery? @relation(fields: [deliveryId], references: [id])
+
+  @@map("payments")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  authorId   String
+  targetId   String
+  rideId     String?
+  deliveryId String?
+  rating     Int      // 1-5
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  author   User      @relation("ReviewAuthor", fields: [authorId], references: [id])
+  target   User      @relation("ReviewTarget", fields: [targetId], references: [id])
+  ride     Ride?     @relation(fields: [rideId], references: [id])
+  delivery Delivery? @relation(fields: [deliveryId], references: [id])
+
+  @@map("reviews")
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("otp_codes")
+}
