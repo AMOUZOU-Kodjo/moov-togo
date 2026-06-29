@@ -24,6 +24,10 @@ const limiter = rateLimit({
 })
 app.use('/api', limiter)
 
+app.get('/api/health', (req, res) => {
+  res.json({ success: true, status: 'ok', timestamp: new Date().toISOString() })
+})
+
 app.use('/api', routes)
 
 app.use(errorHandler)

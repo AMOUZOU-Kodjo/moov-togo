@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: moov-togo-api
+    env: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm install && npx prisma generate
+    startCommand: npx prisma migrate deploy && node src/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: "4000"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: moov-togo-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FLOOZ_API_KEY
+        value: ""
+      - key: TMONEY_API_KEY
+        value: ""
+
+databases:
+  - name: moov-togo-db
+    plan: free
+    region: frankfurt
+    databaseName: moov_togo
+    ipAllowList: []
