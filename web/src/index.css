@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,21 +9,38 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply font-sans text-gray-800 bg-gray-50;
+    @apply font-sans text-gray-800 bg-gray-50 antialiased;
   }
 }
 
 @layer components {
   .btn-moov {
-    @apply btn bg-moov-500 hover:bg-moov-600 text-white border-none rounded-xl font-semibold;
+    @apply btn bg-moov-500 hover:bg-moov-600 text-white border-none rounded-xl font-semibold shadow-md shadow-moov-500/20 hover:shadow-lg hover:shadow-moov-500/30 transition-all duration-200;
   }
   .btn-moov-outline {
     @apply btn bg-transparent border-2 border-moov-500 text-moov-500 hover:bg-moov-500 hover:text-white rounded-xl;
   }
   .card-moov {
-    @apply bg-white rounded-2xl shadow-lg p-6;
+    @apply bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] p-5 border border-gray-50;
   }
   .input-moov {
-    @apply input input-bordered w-full rounded-xl border-gray-200 focus:border-moov-500 focus:ring-moov-500;
+    @apply input input-bordered w-full rounded-xl border-gray-200 focus:border-moov-500 focus:ring-moov-500 transition-all duration-200;
   }
+  .badge-moov {
+    @apply badge badge-sm bg-moov-100 text-moov-600 border-none font-medium;
+  }
+}
+
+.leaflet-container {
+  border-radius: 12px;
+  z-index: 0;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
 }

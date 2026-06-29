@@ -1,4 +1,6 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
+import { Toaster } from 'react-hot-toast'
 import { useAuth } from './context/AuthContext'
 import Layout from './components/Layout'
 import Login from './pages/Login'
@@ -28,22 +30,37 @@ function GuestRoute({ children }) {
 }
 
 export default function App() {
+  const location = useLocation()
+
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
-      <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        <Route index element={<Home />} />
-        <Route path="ride" element={<Ride />} />
-        <Route path="food" element={<Food />} />
-        <Route path="parcel" element={<Parcel />} />
-        <Route path="payment" element={<Payment />} />
-        <Route path="history" element={<History />} />
-        <Route path="profile" element={<Profile />} />
-      </Route>
-      <Route path="/drivers" element={<ProtectedRoute><Drivers /></ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: { borderRadius: '12px', padding: '12px 16px', fontSize: '14px' },
+          success: { iconTheme: { primary: '#00A859', secondary: '#fff' } },
+          error: { iconTheme: { primary: '#EF4444', secondary: '#fff' } },
+        }}
+      />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+          <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+            <Route index element={<Home />} />
+            <Route path="ride" element={<Ride />} />
+            <Route path="food" element={<Food />} />
+            <Route path="parcel" element={<Parcel />} />
+            <Route path="payment" element={<Payment />} />
+            <Route path="history" element={<History />} />
+            <Route path="profile" element={<Profile />} />
+          </Route>
+          <Route path="/drivers" element={<ProtectedRoute><Drivers /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
+    </>
   )
 }

@@ -38,12 +38,16 @@ export const rides = {
   estimate: (data) => api.post('/rides/estimate', data),
   create: (data) => api.post('/rides', data),
   list: () => api.get('/rides'),
+  activeRide: () => api.get('/rides/active'),
   acceptRide: (id) => api.post(`/rides/${id}/accept`),
   updateStatus: (id, status) => api.patch(`/rides/${id}/status`, { status }),
 }
 
 export const deliveries = {
-  getCantines: (lat, lng) => api.get(`/deliveries/cantines?lat=${lat}&lng=${lng}`),
+  getCantines: (lat, lng) => {
+    const params = lat && lng ? `?lat=${lat}&lng=${lng}` : ''
+    return api.get(`/deliveries/cantines${params}`)
+  },
   orderFood: (data) => api.post('/deliveries/food', data),
   sendParcel: (data) => api.post('/deliveries/parcel', data),
   list: () => api.get('/deliveries'),
