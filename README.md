@@ -2,49 +2,48 @@
 
 **Super-app Mobilité & Livraison pour le Togo**
 
+📍 **GitHub** : https://github.com/AMOUZOU-Kodjo/moov-togo  
+🚀 **Backend** : Déployé sur Railway  
+🌐 **Frontend** : Déployé sur Cloudflare Pages  
+
 ## Stack Technique
 
 | Couche | Technologie |
 |--------|------------|
-| Backend | Node.js + Express + TypeScript |
+| Backend | Node.js + Express (JavaScript) |
 | Base de données | PostgreSQL + Prisma ORM |
 | Realtime | Socket.IO (géolocalisation temps réel) |
-| Mobile | React Native (Expo) - iOS & Android |
-| Admin Web | React + Vite + Recharts |
+| Frontend | React + Vite + TailwindCSS + DaisyUI |
+| Icons | Lucide React |
 | Paiement | Flooz / TMoney Mobile Money |
-| Maps | Mapbox / OpenStreetMap |
+| PWA | Téléchargeable sur mobile et desktop |
 
-## Structure du projet
+## Structure
 
 ```
 moov-togo/
-├── backend/                # API REST
+├── backend/                # API REST (JavaScript)
 │   ├── prisma/             # Schéma DB + seeds
 │   ├── src/
 │   │   ├── controllers/    # Logique des endpoints
 │   │   ├── services/       # Logique métier
 │   │   ├── routes/         # Définition des routes
-│   │   ├── middleware/      # Auth, erreurs
+│   │   ├── middleware/      # Auth JWT, gestion erreurs
 │   │   ├── config/         # Configuration
-│   │   ├── types/          # Types TypeScript
-│   │   └── index.ts        # Point d'entrée
+│   │   └── index.js        # Point d'entrée
+│   ├── railway.json        # Config Railway
 │   └── package.json
 │
-├── mobile/                 # App React Native
+├── web/                    # App React (JSX)
 │   ├── src/
-│   │   ├── screens/        # Écrans (Login, Home, Ride, Food, Parcel, Payment, Profile)
-│   │   ├── components/     # Composants réutilisables
-│   │   ├── navigation/     # Navigation (Stack + Tabs)
-│   │   ├── services/       # API client + Socket.IO
+│   │   ├── pages/          # Landing, Login, Home, Ride, Food, Parcel, Payment, History, Profile, Drivers, Admin
+│   │   ├── components/     # Layout, composants réutilisables
+│   │   ├── services/       # Client API Axios
 │   │   ├── context/        # AuthContext
-│   │   └── hooks/          # Custom hooks
+│   │   └── index.css       # Tailwind + DaisyUI
+│   ├── _redirects          # SPA routing Cloudflare
+│   ├── cloudflare.toml     # Config Cloudflare Pages
 │   └── package.json
-│
-├── admin/                  # Dashboard admin web
-│   └── src/
-│       ├── pages/
-│       ├── components/
-│       └── services/
 │
 └── README.md
 ```
@@ -54,73 +53,107 @@ moov-togo/
 ### 🏍️ Mobilité
 - Réservation de zémidjans et taxis
 - Estimation du prix en temps réel
-- Géolocalisation des chauffeurs disponibles
-- Paiement Mobile Money (Flooz/TMoney)
-- Notation des chauffeurs
+- Paiement Flooz/TMoney
+- Interface chauffeur dédiée
 
 ### 🍽️ Livraison de repas
-- Liste des cantines près de chez vous
-- Menu détaillé avec prix
-- Commande et paiement en ligne
-- Livraison par zémidjan
+- Cantines près de chez vous (géolocalisation)
+- Menu détaillé, panier, commande
+- Livraison rapide
 
 ### 📦 Envoi de colis
-- Envoi local et inter-ville (Lomé → Kara, etc.)
+- Local et inter-ville (Lomé → Kara → Atakpamé)
 - Saisie destinataire avec notification
-- Prix calculé selon distance
-- Suivi en temps réel
 
-## Installation
+## Déploiement
 
-### Prérequis
-- Node.js 18+
-- PostgreSQL
-- Expo CLI (pour le mobile)
+### 1. Railway (Backend)
 
-### Backend
 ```bash
+# Installer Railway CLI
+npm i -g @railway/cli
+
+# Se connecter et déployer
 cd backend
-npm install
-cp .env.example .env  # Configurer vos clés API
-npx prisma migrate dev
-npx prisma db seed
-npm run dev
+railway login
+railway init
+railway up
+
+# Variables d'environnement à définir :
+# DATABASE_URL, JWT_SECRET, FLOOZ_API_KEY, TMONEY_API_KEY
 ```
 
-### Mobile
+**railway.json** configure automatiquement :
+- Build : `npm install && npx prisma generate`
+- Start : `npx prisma migrate deploy && node src/index.js`
+
+### 2. Cloudflare Pages (Frontend)
+
 ```bash
-cd mobile
-npm install
-npx expo start
+cd web
+npm run build    # Produit le dossier dist/
 ```
 
-### Admin
+**Sur Cloudflare Pages Dashboard :**
+1. Créer un nouveau projet → Connecter le repo GitHub
+2. Build command : `npm run build`
+3. Build output : `dist`
+4. Déployer ✅
+
+Ou déploiement direct via Wrangler :
 ```bash
-cd admin
-npm install
-npm run dev
+npm i -g wrangler
+wrangler pages deploy dist
 ```
 
 ## API Endpoints
 
+Base URL : `https://moov-togo-api.up.railway.app/api`
+
 ### Auth
-- `POST /api/auth/send-otp` - Envoi code SMS
-- `POST /api/auth/verify-otp` - Connexion
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/auth/send-otp` | Envoi code de vérification SMS |
+| POST | `/auth/verify-otp` | Connexion + retour JWT |
+| GET | `/auth/profile` | Profil utilisateur |
+| PUT | `/auth/profile` | Mettre à jour le profil |
 
 ### Courses
-- `POST /api/rides/estimate` - Estimation prix
-- `POST /api/rides` - Créer une course
-- `POST /api/rides/:id/accept` - Accepter (chauffeur)
-- `PATCH /api/rides/:id/status` - Màj statut
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/rides/estimate` | Estimation du prix |
+| POST | `/rides` | Créer une course |
+| GET | `/rides` | Historique des courses |
+| POST | `/rides/:id/accept` | Accepter une course (chauffeur) |
+| PATCH | `/rides/:id/status` | Mettre à jour le statut |
 
 ### Livraisons
-- `GET /api/deliveries/cantines` - Cantines à proximité
-- `POST /api/deliveries/food` - Commander repas
-- `POST /api/deliveries/parcel` - Envoyer colis
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/deliveries/cantines` | Cantines à proximité |
+| POST | `/deliveries/food` | Commander un repas |
+| POST | `/deliveries/parcel` | Envoyer un colis |
+| GET | `/deliveries` | Historique des livraisons |
 
 ### Paiements
-- `POST /api/payments/pay` - Payer (Flooz/TMoney)
-- `GET /api/payments/wallet` - Solde wallet
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/payments/pay` | Payer par Flooz/TMoney |
+| GET | `/payments/history` | Historique des paiements |
+| GET | `/payments/wallet` | Solde du wallet |
+
+## Environnement (`.env`)
+
+```env
+PORT=4000
+DATABASE_URL="postgresql://..."
+JWT_SECRET="votre-secret"
+FLOOZ_API_KEY="..."
+TMONEY_API_KEY="..."
+PLATFORM_COMMISSION_RIDE=15
+PLATFORM_COMMISSION_FOOD=10
+PLATFORM_COMMISSION_PARCEL=12
+```
 
 ## Licence
 MIT
