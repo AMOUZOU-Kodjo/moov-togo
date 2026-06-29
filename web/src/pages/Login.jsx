@@ -17,7 +17,7 @@ export default function Login() {
     if (phone.length < 8) { setError('Numéro invalide'); return }
     setLoading(true); setError('')
     try {
-      await sendOtp(phone)
+      await sendOtp('+228' + phone)
       setStep('otp')
     } catch { setError('Erreur d\'envoi') }
     finally { setLoading(false) }

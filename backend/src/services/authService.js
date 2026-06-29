@@ -6,7 +6,17 @@ const prisma = new PrismaClient()
 
 const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString()
 
+const normalizePhone = (phone) => {
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length === 8) return '+228' + digits
+  if (digits.length === 11 && digits.startsWith('228')) return '+' + digits
+  if (digits.length === 12 && digits.startsWith('228')) return '+' + digits
+  if (phone.startsWith('+')) return phone
+  return '+' + digits
+}
+
 const sendOtp = async (phone) => {
+  phone = normalizePhone(phone)
   const code = generateCode()
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
 
@@ -19,6 +29,7 @@ const sendOtp = async (phone) => {
 }
 
 const verifyOtp = async (phone, code) => {
+  phone = normalizePhone(phone)
   const otp = await prisma.otpCode.findFirst({
     where: {
       phone,

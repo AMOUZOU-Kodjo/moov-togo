@@ -14,6 +14,7 @@ const { initializeSocket } = require('./services/socketService')
 const app = express()
 const httpServer = http.createServer(app)
 
+app.set('trust proxy', 1)
 app.use(helmet())
 app.use(cors())
 app.use(morgan('dev'))
