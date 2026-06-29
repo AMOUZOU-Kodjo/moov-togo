@@ -67,25 +67,38 @@ moov-togo/
 
 ## Déploiement
 
-### 1. Railway (Backend)
+### 1. Koyeb (Backend)
 
+**Option A — Dashboard (recommandé) :**
+1. Aller sur [koyeb.com](https://koyeb.com) → Create App
+2. Connecter le repo GitHub `AMOUZOU-Kodjo/moov-togo`
+3. Config :
+   - **Builder** : Docker (ou Buildpack)
+   - **Build command** : `npm install && npx prisma generate`
+   - **Run command** : `npx prisma migrate deploy && node src/index.js`
+   - **Port** : 4000
+   - **Instance** : Nano (0.1€/h ou gratuit)
+4. Ajouter les variables d'environnement :
+   - `DATABASE_URL`, `JWT_SECRET`, `FLOOZ_API_KEY`, `TMONEY_API_KEY`
+5. Déployer ✅
+
+**Option B — CLI :**
 ```bash
-# Installer Railway CLI
-npm i -g @railway/cli
-
-# Se connecter et déployer
-cd backend
-railway login
-railway init
-railway up
-
-# Variables d'environnement à définir :
-# DATABASE_URL, JWT_SECRET, FLOOZ_API_KEY, TMONEY_API_KEY
+npm i -g @koyeb/cli
+koyeb login
+koyeb app create moov-togo
+koyeb service create moov-togo-api \
+  --app moov-togo \
+  --git github.com/AMOUZOU-Kodjo/moov-togo \
+  --git-branch master \
+  --git-workdir backend \
+  --build-command "npm install && npx prisma generate" \
+  --run-command "npx prisma migrate deploy && node src/index.js" \
+  --port 4000 \
+  --instance-type nano
 ```
 
-**railway.json** configure automatiquement :
-- Build : `npm install && npx prisma generate`
-- Start : `npx prisma migrate deploy && node src/index.js`
+**Docker** : Un `Dockerfile` est inclus dans `backend/` pour Koyeb.
 
 ### 2. Cloudflare Pages (Frontend)
 
@@ -94,13 +107,12 @@ cd web
 npm run build    # Produit le dossier dist/
 ```
 
-**Sur Cloudflare Pages Dashboard :**
-1. Créer un nouveau projet → Connecter le repo GitHub
-2. Build command : `npm run build`
-3. Build output : `dist`
-4. Déployer ✅
+**Via Dashboard :**
+1. [Cloudflare Pages](https://pages.cloudflare.com) → Create project → Connecter le repo
+2. Framework : React | Build : `npm run build` | Output : `dist`
+3. Déployer ✅
 
-Ou déploiement direct via Wrangler :
+**Via CLI (Wrangler) :**
 ```bash
 npm i -g wrangler
 wrangler pages deploy dist
@@ -108,7 +120,7 @@ wrangler pages deploy dist
 
 ## API Endpoints
 
-Base URL : `https://moov-togo-api.up.railway.app/api`
+Base URL : `https://moov-togo-nom-de-votre-app.koyeb.app/api`
 
 ### Auth
 | Méthode | Endpoint | Description |
